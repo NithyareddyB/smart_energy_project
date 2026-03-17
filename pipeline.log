@@ -1,0 +1,141 @@
+[INFO    ] 2026-03-17 12:33:52 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:33:52 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:33:52 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:33:52 | __main__ | STAGE 1: Data Collection
+[INFO    ] 2026-03-17 12:33:52 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:33:52 | src.data_collection.nasa_api | Fetching NASA POWER data for Hyderabad  lat=17.3850 lon=78.4867  chunks=6
+[INFO    ] 2026-03-17 12:33:52 | src.data_collection.nasa_api |   Chunk 1/6  2021-01-01 → 2021-06-30
+[INFO    ] 2026-03-17 12:33:56 | src.data_collection.nasa_api |   Chunk 2/6  2021-07-01 → 2021-12-31
+[INFO    ] 2026-03-17 12:33:59 | src.data_collection.nasa_api |   Chunk 3/6  2022-01-01 → 2022-06-30
+[INFO    ] 2026-03-17 12:34:02 | src.data_collection.nasa_api |   Chunk 4/6  2022-07-01 → 2022-12-31
+[INFO    ] 2026-03-17 12:34:06 | src.data_collection.nasa_api |   Chunk 5/6  2023-01-01 → 2023-06-30
+[INFO    ] 2026-03-17 12:34:09 | src.data_collection.nasa_api |   Chunk 6/6  2023-07-01 → 2023-12-31
+[INFO    ] 2026-03-17 12:34:12 | src.data_collection.nasa_api | NASA solar data saved → /Users/nithya_reddy/Downloads/smart_energy_project/data/raw/nasa_solar_raw.csv   rows=26280  cols=['ghi', 'dni', 'dhi', 'temperature', 'wind_speed', 'wind_direction', 'humidity', 'clearsky_ghi']
+[INFO    ] 2026-03-17 12:34:12 | src.data_collection.weather_api | Fetching Open-Meteo weather data  2021-01-01 → 2023-12-31  lat=17.3850 lon=78.4867
+[INFO    ] 2026-03-17 12:34:14 | src.data_collection.weather_api | Weather data saved → /Users/nithya_reddy/Downloads/smart_energy_project/data/raw/weather_raw.csv   rows=26280  cols=['wind_speed_10m', 'wind_direction_10m', 'relative_humidity_2m', 'cloud_cover', 'precipitation', 'surface_pressure', 'shortwave_radiation']
+[INFO    ] 2026-03-17 12:34:14 | src.data_collection.grid_loader | Grid demand data already exists at /Users/nithya_reddy/Downloads/smart_energy_project/data/raw/demand_raw.csv — skipping.
+[INFO    ] 2026-03-17 12:34:14 | src.utils.helpers | Data collection completed in 22.26s
+[INFO    ] 2026-03-17 12:34:14 | __main__ | Data collection complete. Check data/raw/
+[INFO    ] 2026-03-17 12:34:14 | src.utils.helpers | Total pipeline completed in 22.26s
+[INFO    ] 2026-03-17 12:34:14 | __main__ | Pipeline finished successfully.
+[INFO    ] 2026-03-17 12:34:28 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:34:28 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:34:28 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:34:28 | __main__ | STAGE 2: Preprocessing
+[INFO    ] 2026-03-17 12:34:28 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner | === DataCleaner: merging and cleaning raw data ===
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner |   Loaded NASA solar: 26280 rows, 8 cols
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner |   Loaded Open-Meteo weather: 26280 rows, 7 cols
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner |   Loaded Grid demand: 26257 rows, 2 cols
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner | Merged shape: (26280, 17)
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner | NaN counts per column before cleaning:
+ghi                      0
+dni                      0
+dhi                      0
+temperature              0
+wind_speed               0
+wind_direction           0
+humidity                 0
+clearsky_ghi             0
+wind_speed_10m           0
+wind_direction_10m       0
+relative_humidity_2m     0
+cloud_cover              0
+precipitation            0
+surface_pressure         0
+shortwave_radiation      0
+demand_mw               23
+frequency_hz            23
+dtype: int64
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner | NaN count after cleaning: 0
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.cleaner | Clean data saved → data/processed/cleaned.csv   shape=(26280, 17)
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.feature_eng | === FeatureEngineer: building feature matrix ===
+[INFO    ] 2026-03-17 12:34:28 | src.preprocessing.feature_eng | Feature matrix: 26112 rows × 84 cols (dropped 168 NaN rows from lag warmup)
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.feature_eng | Features saved → /Users/nithya_reddy/Downloads/smart_energy_project/data/processed/features.csv
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.scaler | === DataScaler: fitting MINMAX scaler ===
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.scaler | Scaler saved → /Users/nithya_reddy/Downloads/smart_energy_project/models/saved/scaler.pkl
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.splitter | === DataSplitter: creating temporal splits ===
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.splitter | Total rows=26112  train=18278  val=3916  test=3918
+[INFO    ] 2026-03-17 12:34:29 | src.preprocessing.splitter | Splits saved to data/processed/splits
+[INFO    ] 2026-03-17 12:34:29 | src.utils.helpers | Preprocessing completed in 1.27s
+[INFO    ] 2026-03-17 12:34:29 | __main__ | Preprocessing complete | train=18278  val=3916  test=3918 rows
+[INFO    ] 2026-03-17 12:34:29 | src.utils.helpers | Total pipeline completed in 1.27s
+[INFO    ] 2026-03-17 12:34:29 | __main__ | Pipeline finished successfully.
+[INFO    ] 2026-03-17 12:34:39 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:34:39 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:34:39 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:34:39 | __main__ | STAGE 3: Model Training
+[INFO    ] 2026-03-17 12:34:39 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:34:41 | src.models.lstm_forecaster | LSTM solar  X_train=(18254, 24, 81)  X_val=(3892, 24, 81)
+[INFO    ] 2026-03-17 12:34:41 | src.models.lstm_forecaster | LSTM model built: None
+[INFO    ] 2026-03-17 12:40:48 | src.models.lstm_forecaster | LSTM solar training done. Best val_loss=0.0006  saved→/Users/nithya_reddy/Downloads/smart_energy_project/models/saved/lstm_solar.keras
+[INFO    ] 2026-03-17 12:40:49 | src.models.evaluator | [LSTM-solar] RMSE=0.0234  MAE=0.0117  MAPE=14.86%  R²=0.9913
+[INFO    ] 2026-03-17 12:40:49 | src.models.evaluator | Eval plot saved → reports/lstm_solar_eval.png
+[INFO    ] 2026-03-17 12:40:49 | src.utils.helpers | LSTM solar forecaster training completed in 358.99s
+[INFO    ] 2026-03-17 12:40:49 | src.models.lstm_forecaster | LSTM wind  X_train=(18254, 24, 81)  X_val=(3892, 24, 81)
+[INFO    ] 2026-03-17 12:40:49 | src.models.lstm_forecaster | LSTM model built: None
+[INFO    ] 2026-03-17 12:43:22 | src.models.lstm_forecaster | LSTM wind training done. Best val_loss=0.0013  saved→/Users/nithya_reddy/Downloads/smart_energy_project/models/saved/lstm_wind.keras
+[INFO    ] 2026-03-17 12:43:22 | src.models.evaluator | [LSTM-wind] RMSE=0.0241  MAE=0.0176  MAPE=9.15%  R²=0.9827
+[INFO    ] 2026-03-17 12:43:23 | src.models.evaluator | Eval plot saved → reports/lstm_wind_eval.png
+[INFO    ] 2026-03-17 12:43:23 | src.utils.helpers | LSTM wind forecaster training completed in 153.53s
+[INFO    ] 2026-03-17 12:43:32 | src.models.rf_demand | RF demand training  X_train=(18278, 81)  (grid_search=False)
+[INFO    ] 2026-03-17 12:43:54 | src.models.rf_demand | RF model saved → /Users/nithya_reddy/Downloads/smart_energy_project/models/saved/rf_demand.pkl
+[INFO    ] 2026-03-17 12:43:54 | src.models.evaluator | [RF-Demand] RMSE=0.0284  MAE=0.0158  MAPE=10.69%  R²=0.9779
+[INFO    ] 2026-03-17 12:43:54 | src.models.evaluator | Eval plot saved → reports/rf_demand_eval.png
+[INFO    ] 2026-03-17 12:43:54 | src.models.rf_demand | Feature importance saved → reports/rf_feature_importance.png
+[INFO    ] 2026-03-17 12:43:54 | src.utils.helpers | Random Forest demand predictor training completed in 31.31s
+[INFO    ] 2026-03-17 12:43:54 | __main__ | Model training complete. Models saved to models/saved/
+[INFO    ] 2026-03-17 12:43:54 | src.utils.helpers | Total pipeline completed in 543.86s
+[INFO    ] 2026-03-17 12:43:54 | __main__ | Pipeline finished successfully.
+[INFO    ] 2026-03-17 12:44:16 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:44:16 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:44:16 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:44:16 | __main__ | STAGE 4: RL Load Optimizer Training
+[INFO    ] 2026-03-17 12:44:16 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:44:22 | src.models.rl_optimizer | === RL: Training PPO Load Optimizer ===
+[INFO    ] 2026-03-17 12:44:22 | src.models.rl_optimizer | Total timesteps = 500000
+[INFO    ] 2026-03-17 12:44:22 | src.models.rl_optimizer | Solar profile loaded: 26280 points
+[INFO    ] 2026-03-17 12:44:22 | src.models.rl_optimizer | Wind profile loaded from NASA: 26280 points
+[INFO    ] 2026-03-17 12:44:22 | src.models.rl_optimizer | Demand profile loaded: 26257 points
+[INFO    ] 2026-03-17 12:45:55 | src.models.rl_optimizer | PPO model saved → /Users/nithya_reddy/Downloads/smart_energy_project/models/saved/rl_optimizer.zip
+[INFO    ] 2026-03-17 12:45:55 | src.models.rl_optimizer | Solar profile loaded: 26280 points
+[INFO    ] 2026-03-17 12:45:55 | src.models.rl_optimizer | Wind profile loaded from NASA: 26280 points
+[INFO    ] 2026-03-17 12:45:55 | src.models.rl_optimizer | Demand profile loaded: 26257 points
+[INFO    ] 2026-03-17 12:45:56 | src.models.rl_optimizer | Episode 1/5 | reward=-124196089.35 | grid_cost=1184536323586 INR | import=140059341254 kWh
+[INFO    ] 2026-03-17 12:45:57 | src.models.rl_optimizer | Episode 2/5 | reward=-35017310.18 | grid_cost=333983538556 INR | import=39486575880 kWh
+[INFO    ] 2026-03-17 12:45:58 | src.models.rl_optimizer | Episode 3/5 | reward=-124672751.08 | grid_cost=1189086042435 INR | import=140588359782 kWh
+[INFO    ] 2026-03-17 12:45:59 | src.models.rl_optimizer | Episode 4/5 | reward=-44627938.10 | grid_cost=425644913379 INR | import=50327759109 kWh
+[INFO    ] 2026-03-17 12:45:59 | src.models.rl_optimizer | Episode 5/5 | reward=-39834163.80 | grid_cost=379927827679 INR | import=44911545273 kWh
+[INFO    ] 2026-03-17 12:45:59 | src.models.rl_optimizer | RL Evaluation: {'mean_reward': -73669650.50246543, 'std_reward': 41560803.46557442, 'mean_grid_cost': 702635729127.018, 'mean_import_kw': 83074716259.60628}
+[INFO    ] 2026-03-17 12:45:59 | src.utils.helpers | RL optimizer training completed in 102.57s
+[INFO    ] 2026-03-17 12:45:59 | __main__ | RL training complete. Model saved to models/saved/rl_optimizer.zip
+[INFO    ] 2026-03-17 12:45:59 | src.utils.helpers | Total pipeline completed in 102.57s
+[INFO    ] 2026-03-17 12:45:59 | __main__ | Pipeline finished successfully.
+[INFO    ] 2026-03-17 12:46:13 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:46:13 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:46:13 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:46:13 | __main__ | STAGE 5: Policy Simulation & Economic Analysis
+[INFO    ] 2026-03-17 12:46:13 | __main__ | ============================================================
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator | Base demand: 5817641.5 kW
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator | === PolicySimulator: running 3 scenarios ===
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator |   Running scenario: Baseline
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator |   Running scenario: Moderate transition
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator |   Running scenario: Aggressive RE
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.policy_simulator | Simulation results saved → reports/simulation
+[INFO    ] 2026-03-17 12:46:13 | src.utils.helpers | Policy simulation completed in 0.38s
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.economic_analysis | Economics summary:
+           scenario  total_capex_cr  annual_savings_cr    npv_cr  irr_pct  payback_yr  lcoe_inr_kwh
+      Aggressive RE        91635.21           27008.48  89593.91    26.71           4        2.7085
+           Baseline        30542.15           18428.32  93113.35    59.78           2        1.3675
+Moderate transition        61086.81           24044.17 100251.55    37.76           3        2.0612
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.economic_analysis | Payback chart saved → reports/simulation/payback_period.png
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.economic_analysis | Sensitivity tornado saved → reports/simulation/sensitivity_tornado.png
+[INFO    ] 2026-03-17 12:46:13 | src.simulation.economic_analysis | Economic analysis saved → reports/simulation
+[INFO    ] 2026-03-17 12:46:13 | src.utils.helpers | Economic analysis completed in 0.35s
+[INFO    ] 2026-03-17 12:46:13 | __main__ | Simulation complete. Reports saved to reports/simulation/
+[INFO    ] 2026-03-17 12:46:13 | src.utils.helpers | Total pipeline completed in 0.73s
+[INFO    ] 2026-03-17 12:46:13 | __main__ | Pipeline finished successfully.
+[INFO    ] 2026-03-17 12:46:35 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-17 12:46:35 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-17 12:46:35 | __main__ | Launching Streamlit dashboard on http://localhost:8501
+[INFO    ] 2026-03-17 12:52:40 | src.utils.helpers | Total pipeline completed in 364.55s

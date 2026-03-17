@@ -1,0 +1,213 @@
+# =============================================================================
+# Smart Energy Optimization System — Central Configuration
+# =============================================================================
+# All modules read from this file via src/utils/config.py
+# Sensitive values (API keys) go in .env — never commit .env to git
+
+# -----------------------------------------------------------------------------
+# Project
+# -----------------------------------------------------------------------------
+project:
+  name: "Smart Energy Optimization System"
+  version: "1.0.0"
+  region: "Telangana, India"
+  timezone: "Asia/Kolkata"
+
+# -----------------------------------------------------------------------------
+# Target location (used by NASA & weather APIs)
+# Change lat/lon to your target study area
+# -----------------------------------------------------------------------------
+location:
+  latitude: 17.385044        # Hyderabad, Telangana
+  longitude: 78.486671
+  elevation_m: 536
+  name: "Hyderabad"
+
+# -----------------------------------------------------------------------------
+# Data collection
+# -----------------------------------------------------------------------------
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  external_dir: "data/external"
+
+  # Date range for historical data pull
+  start_date: "2021-01-01"
+  end_date:   "2023-12-31"
+
+  nasa_power:
+    base_url: "https://power.larc.nasa.gov/api/temporal/hourly/point"
+    parameters:           # NASA POWER variable codes
+      - "ALLSKY_SFC_SW_DWN"   # Global Horizontal Irradiance (GHI) W/m²
+      - "ALLSKY_SFC_SW_DNI"   # Direct Normal Irradiance (DNI) W/m²
+      - "ALLSKY_SFC_SW_DIFF"  # Diffuse Horizontal Irradiance (DHI) W/m²
+      - "T2M"                 # Temperature at 2m (°C)
+      - "WS10M"               # Wind speed at 10m (m/s)
+      - "WD10M"               # Wind direction at 10m (°)
+      - "RH2M"                # Relative humidity at 2m (%)
+      - "CLRSKY_SFC_SW_DWN"   # Clear-sky GHI (for cloud index)
+    community: "RE"           # Renewable Energy community
+    output_file: "data/raw/nasa_solar_raw.csv"
+    chunk_months: 6           # API has limits; pull in 6-month chunks
+
+  open_meteo:
+    base_url: "https://api.open-meteo.com/v1/forecast"
+    output_file: "data/raw/weather_raw.csv"
+
+  grid_demand:
+    # Set to a local CSV path or a public dataset URL
+    source: "data/external/grid_demand.csv"
+    output_file: "data/raw/demand_raw.csv"
+    # Expected columns after loading:
+    # timestamp, demand_mw, frequency_hz, voltage_kv
+
+# -----------------------------------------------------------------------------
+# Preprocessing
+# -----------------------------------------------------------------------------
+preprocessing:
+  # Max consecutive hours to forward-fill; gaps longer → interpolate
+  ffill_limit_hours: 3
+  # Features to create lag versions of
+  lag_features:
+    - "ghi"
+    - "temperature"
+    - "wind_speed"
+    - "demand_mw"
+  lag_hours: [1, 2, 3, 6, 12, 24, 48, 168]   # 168 = 1 week
+  # Rolling window sizes (hours)
+  rolling_windows: [6, 24, 168]
+  # Train / validation / test split ratios (must sum to 1.0)
+  split_ratios:
+    train: 0.70
+    val:   0.15
+    test:  0.15
+  # Scaler type: "minmax" | "standard"
+  scaler_type: "minmax"
+  scaler_save_path: "models/saved/scaler.pkl"
+  processed_file: "data/processed/features.csv"
+
+# -----------------------------------------------------------------------------
+# LSTM Forecaster
+# -----------------------------------------------------------------------------
+lstm:
+  sequence_length: 24        # hours of history fed into model
+  forecast_horizon: 24       # hours ahead to predict
+  units: [128, 64]           # units per LSTM layer
+  dropout: 0.2
+  batch_size: 64
+  epochs: 100
+  learning_rate: 0.001
+  early_stopping_patience: 10
+  model_save_path: "models/saved/lstm_solar.keras"
+  target_column: "ghi"       # what we're forecasting
+
+lstm_wind:
+  sequence_length: 24
+  forecast_horizon: 24
+  units: [64, 32]
+  dropout: 0.2
+  batch_size: 64
+  epochs: 100
+  learning_rate: 0.001
+  early_stopping_patience: 10
+  model_save_path: "models/saved/lstm_wind.keras"
+  target_column: "wind_speed"
+
+# -----------------------------------------------------------------------------
+# Random Forest — Demand Predictor
+# -----------------------------------------------------------------------------
+random_forest:
+  n_estimators: 200
+  max_depth: 20
+  min_samples_split: 5
+  min_samples_leaf: 2
+  n_jobs: -1                 # use all CPU cores
+  random_state: 42
+  model_save_path: "models/saved/rf_demand.pkl"
+  target_column: "demand_mw"
+  # GridSearchCV param grid (used in notebook)
+  param_grid:
+    n_estimators: [100, 200, 300]
+    max_depth: [10, 20, null]
+    min_samples_split: [2, 5, 10]
+
+# -----------------------------------------------------------------------------
+# Reinforcement Learning — Load Optimizer
+# -----------------------------------------------------------------------------
+rl:
+  algorithm: "PPO"           # PPO | DQN | SAC
+  total_timesteps: 500000
+  learning_rate: 0.0003
+  n_steps: 2048              # steps per policy update
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99                # discount factor
+  model_save_path: "models/saved/rl_optimizer.zip"
+  log_dir: "reports/rl_logs"
+  # Microgrid environment parameters
+  env:
+    battery_capacity_kwh: 500
+    battery_max_charge_kw: 100
+    battery_max_discharge_kw: 100
+    battery_initial_soc: 0.5   # state of charge (0-1)
+    solar_capacity_kw: 1000
+    wind_capacity_kw: 500
+    grid_import_price_per_kwh: 7.5     # INR
+    grid_export_price_per_kwh: 3.5     # INR
+    carbon_penalty_per_kg: 0.5         # INR
+    stability_penalty_weight: 10.0
+
+# -----------------------------------------------------------------------------
+# Policy Simulation
+# -----------------------------------------------------------------------------
+simulation:
+  output_dir: "reports/simulation"
+  scenarios:
+    - name: "Baseline"
+      renewable_pct: 30
+      storage_capacity_kwh: 500
+      demand_growth_pct_per_year: 4.0
+      carbon_price_inr_per_kg: 0.5
+    - name: "Moderate transition"
+      renewable_pct: 60
+      storage_capacity_kwh: 2000
+      demand_growth_pct_per_year: 4.0
+      carbon_price_inr_per_kg: 1.0
+    - name: "Aggressive RE"
+      renewable_pct: 90
+      storage_capacity_kwh: 5000
+      demand_growth_pct_per_year: 4.0
+      carbon_price_inr_per_kg: 2.0
+  simulation_years: 10
+
+# -----------------------------------------------------------------------------
+# Economic Analysis
+# -----------------------------------------------------------------------------
+economics:
+  discount_rate: 0.08          # 8% — typical for Indian infrastructure
+  solar_capex_per_kw_inr: 45000
+  wind_capex_per_kw_inr: 55000
+  battery_capex_per_kwh_inr: 25000
+  opex_pct_of_capex: 0.02      # 2% per year
+  solar_lifetime_years: 25
+  wind_lifetime_years: 20
+  battery_lifetime_years: 10
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+logging:
+  level: "INFO"               # DEBUG | INFO | WARNING | ERROR
+  log_dir: "reports/logs"
+  log_file: "pipeline.log"
+  max_bytes: 10485760         # 10 MB before rotation
+  backup_count: 5
+
+# -----------------------------------------------------------------------------
+# Dashboard
+# -----------------------------------------------------------------------------
+dashboard:
+  title: "Smart Energy Optimization — Telangana"
+  port: 8501
+  theme: "light"
+  refresh_interval_seconds: 300

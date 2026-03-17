@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+env/
+
+# Models & data
+models/
+data/
+*.pkl
+*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Mac files
+.DS_Store
