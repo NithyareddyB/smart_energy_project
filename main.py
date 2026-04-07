@@ -112,30 +112,85 @@ def run_preprocess() -> None:
 
 
 def run_train() -> None:
-    """Stage 3 — Train LSTM forecasters and Random Forest demand predictor."""
+    """Stage 3 — Train all 7 supervised models (LSTM, GRU, CNN-LSTM, RF, XGBoost, SVR, SARIMA)."""
     log.info("=" * 60)
-    log.info("STAGE 3: Model Training")
+    log.info("STAGE 3: Model Training (8-Model Suite)")
     log.info("=" * 60)
 
+    # ── Deep Learning models ────────────────────────────────────────────────
     with timer("LSTM solar forecaster training"):
         from src.models.lstm_forecaster import LSTMForecaster
-        lstm_solar = LSTMForecaster(target="solar")
-        lstm_solar.train()
-        lstm_solar.evaluate()
+        LSTMForecaster(target="solar").train()
 
     with timer("LSTM wind forecaster training"):
         from src.models.lstm_forecaster import LSTMForecaster
-        lstm_wind = LSTMForecaster(target="wind")
-        lstm_wind.train()
-        lstm_wind.evaluate()
+        LSTMForecaster(target="wind").train()
 
+    with timer("GRU wind forecaster training"):
+        from src.models.gru_forecaster import GRUForecaster
+        GRUForecaster().train()
+
+    with timer("CNN-LSTM solar multi-step forecaster training"):
+        from src.models.cnn_lstm_solar import CNNLSTMSolarForecaster
+        CNNLSTMSolarForecaster().train()
+
+    # ── Classical ML models ─────────────────────────────────────────────────
     with timer("Random Forest demand predictor training"):
         from src.models.rf_demand import RFDemandPredictor
-        rf = RFDemandPredictor()
-        rf.train()
-        rf.evaluate()
+        RFDemandPredictor().train()
 
-    log.info("Model training complete. Models saved to models/saved/")
+    with timer("XGBoost demand predictor training"):
+        from src.models.xgboost_demand import XGBoostDemandPredictor
+        XGBoostDemandPredictor().train()
+
+    with timer("SVR wind predictor training"):
+        from src.models.svr_wind import SVRWindPredictor
+        SVRWindPredictor().train()
+
+    # ── Statistical baseline ────────────────────────────────────────────────
+    with timer("SARIMA demand baseline training"):
+        from src.models.sarima_demand import SARIMADemandForecaster
+        SARIMADemandForecaster().train()
+
+    log.info("All 7 supervised models trained. Saved to models/saved/")
+
+
+def run_compare() -> None:
+    """Print a side-by-side metric comparison table for all supervised models."""
+    log.info("=" * 60)
+    log.info("MODEL COMPARISON TABLE")
+    log.info("=" * 60)
+    import pandas as pd
+
+    results = []
+    model_map = {
+        "LSTM Solar":     ("src.models.lstm_forecaster", "LSTMForecaster",         {"target": "solar"}),
+        "LSTM Wind":      ("src.models.lstm_forecaster", "LSTMForecaster",         {"target": "wind"}),
+        "GRU Wind":       ("src.models.gru_forecaster",  "GRUForecaster",          {}),
+        "CNN-LSTM Solar": ("src.models.cnn_lstm_solar",  "CNNLSTMSolarForecaster", {}),
+        "RF Demand":      ("src.models.rf_demand",       "RFDemandPredictor",      {}),
+        "XGBoost Demand": ("src.models.xgboost_demand",  "XGBoostDemandPredictor", {}),
+        "SVR Wind":       ("src.models.svr_wind",        "SVRWindPredictor",       {}),
+        "SARIMA Demand":  ("src.models.sarima_demand",   "SARIMADemandForecaster", {}),
+    }
+    for name, (module_path, cls_name, kwargs) in model_map.items():
+        try:
+            import importlib
+            mod = importlib.import_module(module_path)
+            cls = getattr(mod, cls_name)
+            instance = cls(**kwargs) if kwargs else cls()
+            metrics = instance.evaluate()
+            metrics["model"] = name
+            results.append(metrics)
+        except Exception as exc:
+            log.warning("Could not evaluate %s: %s", name, exc)
+
+    if results:
+        df = pd.DataFrame(results).set_index("model")
+        log.info("\n" + df.to_string())
+        out = Path("reports") / "model_comparison.csv"
+        df.to_csv(out)
+        log.info("Comparison saved → %s", out)
 
 
 def run_rl() -> None:
@@ -190,9 +245,10 @@ def run_dashboard() -> None:
 @click.option("--all",        "run_all",   is_flag=True, help="Run the full pipeline end to end.")
 @click.option("--collect",               is_flag=True, help="Stage 1: collect raw data.")
 @click.option("--preprocess",            is_flag=True, help="Stage 2: clean & engineer features.")
-@click.option("--train",                 is_flag=True, help="Stage 3: train LSTM + RF models.")
+@click.option("--train",                 is_flag=True, help="Stage 3: train all 7 supervised models.")
 @click.option("--rl",                    is_flag=True, help="Stage 4: train RL optimizer.")
 @click.option("--simulate",              is_flag=True, help="Stage 5: policy simulation & economics.")
+@click.option("--compare",               is_flag=True, help="Print side-by-side metrics for all models.")
 @click.option("--dashboard",             is_flag=True, help="Launch Streamlit dashboard.")
 @click.option("--log-level", default=None,
               type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
@@ -204,6 +260,7 @@ def main(
     train: bool,
     rl: bool,
     simulate: bool,
+    compare: bool,
     dashboard: bool,
     log_level: str | None,
 ) -> None:
@@ -219,7 +276,7 @@ def main(
     log.info("Smart Energy Optimization System  |  region: %s", get("project.region"))
 
     # ── Decide which stages to run ────────────────────────────────────────
-    if not any([run_all, collect, preprocess, train, rl, simulate, dashboard]):
+    if not any([run_all, collect, preprocess, train, rl, simulate, compare, dashboard]):
         click.echo(click.get_current_context().get_help())
         return
 
@@ -229,7 +286,8 @@ def main(
         "train":      train      or run_all,
         "rl":         rl         or run_all,
         "simulate":   simulate   or run_all,
-        "dashboard":  dashboard,          # never auto-run with --all
+        "compare":    compare,
+        "dashboard":  dashboard,
     }
 
     # ── Execute stages in order ───────────────────────────────────────────
@@ -248,6 +306,9 @@ def main(
 
         if stages["simulate"]:
             run_simulate()
+
+        if stages["compare"]:
+            run_compare()
 
         if stages["dashboard"]:
             run_dashboard()

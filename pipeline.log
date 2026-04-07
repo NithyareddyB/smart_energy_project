@@ -139,3 +139,58 @@ Moderate transition        61086.81           24044.17 100251.55    37.76       
 [INFO    ] 2026-03-17 12:46:35 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
 [INFO    ] 2026-03-17 12:46:35 | __main__ | Launching Streamlit dashboard on http://localhost:8501
 [INFO    ] 2026-03-17 12:52:40 | src.utils.helpers | Total pipeline completed in 364.55s
+[INFO    ] 2026-03-23 22:07:18 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-23 22:07:18 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-23 22:07:28 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-23 22:07:28 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-03-23 22:07:30 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-03-23 22:07:30 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-04-07 15:47:19 | src.utils.logger | Logging configured | level=INFO | file=/Users/nithya_reddy/Downloads/smart_energy_project/pipeline.log
+[INFO    ] 2026-04-07 15:47:19 | __main__ | Smart Energy Optimization System  |  region: Telangana, India
+[INFO    ] 2026-04-07 15:47:19 | __main__ | ============================================================
+[INFO    ] 2026-04-07 15:47:19 | __main__ | STAGE 3: Model Training (8-Model Suite)
+[INFO    ] 2026-04-07 15:47:19 | __main__ | ============================================================
+[INFO    ] 2026-04-07 15:47:22 | src.models.lstm_forecaster | LSTM solar  X_train=(18254, 24, 81)  X_val=(3892, 24, 81)
+[INFO    ] 2026-04-07 15:47:22 | src.models.lstm_forecaster | LSTM model built: None
+[INFO    ] 2026-04-07 15:51:59 | src.models.lstm_forecaster | LSTM solar training done. Best val_loss=0.0007  saved→/Users/nithya_reddy/Downloads/smart_energy_project/models/saved/lstm_solar.keras
+[INFO    ] 2026-04-07 15:51:59 | src.utils.helpers | LSTM solar forecaster training completed in 279.16s
+[INFO    ] 2026-04-07 15:51:59 | src.models.lstm_forecaster | LSTM wind  X_train=(18254, 24, 81)  X_val=(3892, 24, 81)
+[INFO    ] 2026-04-07 15:51:59 | src.models.lstm_forecaster | LSTM model built: None
+[INFO    ] 2026-04-07 15:55:21 | src.models.lstm_forecaster | LSTM wind training done. Best val_loss=0.0012  saved→/Users/nithya_reddy/Downloads/smart_energy_project/models/saved/lstm_wind.keras
+[INFO    ] 2026-04-07 15:55:21 | src.utils.helpers | LSTM wind forecaster training completed in 202.30s
+[INFO    ] 2026-04-07 15:55:21 | src.models.gru_forecaster | GRU: loaded real splits  X_train=(18278, 81)
+[INFO    ] 2026-04-07 15:55:21 | src.models.gru_forecaster | GRU model built: None
+[INFO    ] 2026-04-07 16:02:22 | src.models.evaluator | [GRU Wind] RMSE=0.0225  MAE=0.0164  MAPE=7.96%  R²=0.9850
+[INFO    ] 2026-04-07 16:02:23 | src.models.evaluator | Eval plot saved → reports/gru_wind_eval.png
+[INFO    ] 2026-04-07 16:02:23 | src.models.gru_forecaster | GRU metrics: {'rmse': 0.02248356118798256, 'mae': 0.016370723024010658, 'mape': 7.960139214992523, 'r2': 0.984987288625495}
+[INFO    ] 2026-04-07 16:02:23 | src.utils.helpers | GRU wind forecaster training completed in 421.84s
+[INFO    ] 2026-04-07 16:02:23 | src.models.cnn_lstm_solar | CNN-LSTM model built — horizon=48h  params=156752
+[INFO    ] 2026-04-07 16:03:19 | src.models.evaluator | [CNN-LSTM Solar] RMSE=0.0580  MAE=0.0349  MAPE=64.11%  R²=0.9465
+[INFO    ] 2026-04-07 16:03:19 | src.models.evaluator | Eval plot saved → reports/cnn_lstm_solar_eval.png
+[INFO    ] 2026-04-07 16:03:19 | src.models.cnn_lstm_solar | CNN-LSTM metrics (step 1): {'rmse': 0.057973019778728485, 'mae': 0.03490603342652321, 'mape': 64.11095261573792, 'r2': 0.946479311852001}
+[INFO    ] 2026-04-07 16:03:19 | src.utils.helpers | CNN-LSTM solar multi-step forecaster training completed in 56.15s
+[INFO    ] 2026-04-07 16:03:19 | src.models.rf_demand | RF demand training  X_train=(18278, 81)  (grid_search=False)
+[INFO    ] 2026-04-07 16:03:50 | src.models.rf_demand | RF model saved → /Users/nithya_reddy/Downloads/smart_energy_project/models/saved/rf_demand.pkl
+[INFO    ] 2026-04-07 16:03:50 | src.utils.helpers | Random Forest demand predictor training completed in 30.92s
+[INFO    ] 2026-04-07 16:03:50 | src.models.xgboost_demand | XGBoost: training on X_train=(18278, 81)
+[INFO    ] 2026-04-07 16:03:51 | src.models.xgboost_demand | XGBoost model saved → models/saved/xgboost_demand.json
+[INFO    ] 2026-04-07 16:03:51 | src.models.evaluator | [XGBoost Demand] RMSE=0.0287  MAE=0.0163  MAPE=11.41%  R²=0.9774
+[INFO    ] 2026-04-07 16:03:51 | src.models.evaluator | Eval plot saved → reports/xgboost_demand_eval.png
+[INFO    ] 2026-04-07 16:03:51 | src.models.xgboost_demand | XGBoost metrics: {'rmse': 0.02873353287577629, 'mae': 0.016266874969005585, 'mape': 11.414852738380432, 'r2': 0.9774121350135533}
+[INFO    ] 2026-04-07 16:03:51 | src.utils.helpers | XGBoost demand predictor training completed in 1.46s
+[INFO    ] 2026-04-07 16:03:51 | src.models.svr_wind | SVR: sub-sampled training set to 5000 rows
+[INFO    ] 2026-04-07 16:03:51 | src.models.svr_wind | SVR: fitting on X_train=(5000, 81)
+[INFO    ] 2026-04-07 16:03:51 | src.models.svr_wind | SVR model saved → models/saved/svr_wind.pkl
+[INFO    ] 2026-04-07 16:03:51 | src.models.evaluator | [SVR Wind] RMSE=0.0402  MAE=0.0319  MAPE=14.89%  R²=0.9539
+[INFO    ] 2026-04-07 16:03:51 | src.models.evaluator | Eval plot saved → reports/svr_wind_eval.png
+[INFO    ] 2026-04-07 16:03:51 | src.models.svr_wind | SVR metrics: {'rmse': 0.04021718623288844, 'mae': 0.031883086220432275, 'mape': 14.894053038587998, 'r2': 0.9538792658846887}
+[INFO    ] 2026-04-07 16:03:51 | src.utils.helpers | SVR wind predictor training completed in 0.22s
+[INFO    ] 2026-04-07 16:03:52 | src.models.sarima_demand | SARIMA: fitting on 2000 rows  order=(1, 1, 1)  seasonal=(1, 1, 1, 24)
+[INFO    ] 2026-04-07 16:04:00 | src.models.sarima_demand | SARIMA fitted model saved → models/saved/sarima_demand.pkl
+[INFO    ] 2026-04-07 16:04:00 | src.models.evaluator | [SARIMA Demand] RMSE=0.2207  MAE=0.1940  MAPE=81.89%  R²=-0.3424
+[INFO    ] 2026-04-07 16:04:00 | src.models.evaluator | Eval plot saved → reports/sarima_demand_eval.png
+[INFO    ] 2026-04-07 16:04:00 | src.models.sarima_demand | SARIMA metrics: {'rmse': 0.22074239953736466, 'mae': 0.1940182172956398, 'mape': 81.88809647862882, 'r2': -0.342406682806607}
+[INFO    ] 2026-04-07 16:04:00 | src.utils.helpers | SARIMA demand baseline training completed in 8.94s
+[INFO    ] 2026-04-07 16:04:00 | __main__ | All 7 supervised models trained. Saved to models/saved/
+[INFO    ] 2026-04-07 16:04:00 | src.utils.helpers | Total pipeline completed in 1000.99s
+[INFO    ] 2026-04-07 16:04:00 | __main__ | Pipeline finished successfully.

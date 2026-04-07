@@ -40,7 +40,7 @@ def load_economics() -> pd.DataFrame:
         "scenario":          ["Baseline", "Moderate transition", "Aggressive RE"],
         "total_capex_cr":    [320.5, 780.2, 1450.8],
         "annual_savings_cr": [12.4,  48.7,  95.3],
-        "npv_cr":            [−42.1, 118.3, 287.6],
+        "npv_cr":            [-42.1, 118.3, 287.6],
         "irr_pct":           [5.2,   11.8,  16.4],
         "payback_yr":        [None,  9,     8],
         "lcoe_inr_kwh":      [6.85,  4.20,  3.15],
@@ -55,9 +55,9 @@ def load_sensitivity() -> pd.DataFrame:
     return pd.DataFrame({
         "parameter": ["Solar CAPEX", "Solar CAPEX", "Wind CAPEX", "Wind CAPEX",
                       "Battery CAPEX", "Battery CAPEX", "Discount Rate", "Discount Rate"],
-        "change":    ["+20%", "−20%", "+20%", "−20%",
-                      "+20%", "−20%", "+20%", "−20%"],
-        "delta_npv_cr": [−28.4, 28.4, −15.2, 15.2, −8.9, 8.9, −22.1, 22.1],
+        "change":    ["+20%", "-20%", "+20%", "-20%",
+                      "+20%", "-20%", "+20%", "-20%"],
+        "delta_npv_cr": [-28.4, 28.4, -15.2, 15.2, -8.9, 8.9, -22.1, 22.1],
     })
 
 
@@ -102,7 +102,8 @@ display_cols = {
     "payback_yr":        "Payback (yrs)",
     "lcoe_inr_kwh":      "LCOE (₹/kWh)",
 }
-show_df = df_econ.rename(columns=display_cols)[[c for c in display_cols.values() if c in show_df.columns or c in df_econ.rename(columns=display_cols).columns]]
+renamed_df = df_econ.rename(columns=display_cols)
+show_df = renamed_df[[c for c in display_cols.values() if c in renamed_df.columns]]
 scenario_table(show_df, highlight_col="NPV (Cr ₹)", higher_is_better=True)
 
 # ---------------------------------------------------------------------------
